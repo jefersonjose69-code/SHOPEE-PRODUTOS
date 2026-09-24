@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Shopee Produtos</title>
 
   <style>
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -21,12 +23,12 @@
     header {
       background: #ee4d2d;
       color: white;
-      padding: 20px;
+      padding: 22px 15px;
       text-align: center;
     }
 
     header h1 {
-      font-size: 25px;
+      font-size: 26px;
       margin-bottom: 8px;
     }
 
@@ -45,26 +47,41 @@
       padding: 20px;
       border-radius: 12px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
       display: flex;
       gap: 10px;
+
       margin-bottom: 25px;
     }
 
     .search-box input {
       flex: 1;
+
       padding: 14px;
+
       border: 1px solid #ddd;
       border-radius: 8px;
+
       font-size: 16px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: #ee4d2d;
     }
 
     .search-box button {
       background: #ee4d2d;
       color: white;
+
       border: none;
       border-radius: 8px;
-      padding: 0 22px;
+
+      padding: 0 24px;
+
       font-size: 16px;
+      font-weight: bold;
+
       cursor: pointer;
     }
 
@@ -79,21 +96,36 @@
 
     .produtos {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+      grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+
       gap: 18px;
     }
 
     .produto {
       background: white;
+
       border-radius: 12px;
+
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+
+      box-shadow:
+        0 2px 8px rgba(0,0,0,0.08);
+
+      transition: transform 0.2s;
+    }
+
+    .produto:hover {
+      transform: translateY(-3px);
     }
 
     .produto img {
       width: 100%;
       height: 210px;
+
       object-fit: cover;
+
       background: #eee;
     }
 
@@ -103,40 +135,65 @@
 
     .produto h3 {
       font-size: 16px;
+
       margin-bottom: 10px;
+
+      line-height: 1.4;
     }
 
     .preco {
       color: #ee4d2d;
+
       font-size: 20px;
+
       font-weight: bold;
+
       margin-bottom: 8px;
     }
 
     .vendas {
       color: #666;
+
       font-size: 14px;
     }
 
     .ranking {
       display: inline-block;
+
       background: #ee4d2d;
+
       color: white;
+
       padding: 5px 8px;
+
       border-radius: 6px;
+
       font-size: 12px;
+
       margin-bottom: 10px;
     }
 
     .mensagem {
       text-align: center;
+
       padding: 30px;
+
       color: #777;
+
       background: white;
+
       border-radius: 12px;
+
+      grid-column: 1 / -1;
+    }
+
+    .carregando {
+      font-size: 16px;
+      color: #ee4d2d;
     }
 
     @media (max-width: 600px) {
+
       .search-box {
         flex-direction: column;
       }
@@ -144,74 +201,250 @@
       .search-box button {
         padding: 14px;
       }
+
     }
+
   </style>
+
 </head>
 
 <body>
 
   <header>
+
     <h1>🛒 Shopee Produtos</h1>
-    <p>Pesquisa e ranking de produtos</p>
+
+    <p>
+      Encontre produtos e acompanhe o ranking de vendas
+    </p>
+
   </header>
+
 
   <div class="container">
 
     <div class="search-box">
+
       <input
         type="text"
         id="pesquisa"
         placeholder="Digite o produto que deseja pesquisar..."
+        onkeydown="if(event.key === 'Enter') pesquisar()"
       >
 
       <button onclick="pesquisar()">
-        Pesquisar
+        🔎 Pesquisar
       </button>
+
     </div>
 
-    <h2 class="titulo">🔥 Produtos encontrados</h2>
 
-    <div id="produtos" class="produtos">
+    <h2 class="titulo">
+      🔥 Produtos encontrados
+    </h2>
+
+
+    <div
+      id="produtos"
+      class="produtos"
+    >
 
       <div class="mensagem">
+
         Digite um produto acima para começar a pesquisa.
+
       </div>
 
     </div>
 
   </div>
 
+
   <script>
 
-    function pesquisar() {
+    async function pesquisar() {
 
       const pesquisa =
-        document.getElementById("pesquisa").value.trim();
+        document
+          .getElementById("pesquisa")
+          .value
+          .trim();
+
 
       const area =
         document.getElementById("produtos");
 
+
       if (!pesquisa) {
+
         area.innerHTML = `
+
           <div class="mensagem">
+
             Digite o nome de um produto.
+
           </div>
+
         `;
+
         return;
+
       }
 
+
       area.innerHTML = `
+
         <div class="mensagem">
-          🔎 Pesquisando por:
-          <strong>${pesquisa}</strong>
-          <br><br>
-          A conexão com a fonte de produtos será adicionada
-          na próxima etapa.
+
+          <div class="carregando">
+
+            🔎 Pesquisando por:
+
+            <strong>
+              ${pesquisa}
+            </strong>
+
+            <br><br>
+
+            Aguarde...
+
+          </div>
+
         </div>
+
       `;
+
+
+      try {
+
+        const resposta = await fetch(
+
+          `/api/produtos?busca=${encodeURIComponent(pesquisa)}`
+
+        );
+
+
+        const dados =
+          await resposta.json();
+
+
+        if (!resposta.ok) {
+
+          throw new Error(
+            dados.erro ||
+            "Erro na pesquisa."
+          );
+
+        }
+
+
+        if (
+          !dados.produtos ||
+          dados.produtos.length === 0
+        ) {
+
+          area.innerHTML = `
+
+            <div class="mensagem">
+
+              🔎 Pesquisa:
+
+              <strong>
+                ${dados.busca}
+              </strong>
+
+              <br><br>
+
+              A conexão com a API da Shopee
+              ainda não foi ativada.
+
+              <br><br>
+
+              <small>
+                Estamos preparando a integração.
+              </small>
+
+            </div>
+
+          `;
+
+          return;
+
+        }
+
+
+        area.innerHTML =
+          dados.produtos
+            .map((produto) => `
+
+              <div class="produto">
+
+                <img
+                  src="${produto.imagem}"
+                  alt="${produto.nome}"
+                  onerror="this.style.display='none'"
+                >
+
+                <div class="produto-info">
+
+                  <span class="ranking">
+
+                    🏆 ${produto.posicao}º lugar
+
+                  </span>
+
+                  <h3>
+
+                    ${produto.nome}
+
+                  </h3>
+
+                  <div class="preco">
+
+                    R$ ${produto.preco}
+
+                  </div>
+
+                  <div class="vendas">
+
+                    📦 ${produto.vendas} vendas
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            `)
+            .join("");
+
+
+      } catch (erro) {
+
+        console.error(erro);
+
+
+        area.innerHTML = `
+
+          <div class="mensagem">
+
+            ❌ Não foi possível realizar
+            a pesquisa.
+
+            <br><br>
+
+            ${erro.message}
+
+          </div>
+
+        `;
+
+      }
+
     }
 
   </script>
 
 </body>
+
 </html>
